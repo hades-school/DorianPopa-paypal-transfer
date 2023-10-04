@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <link
+      rel="stylesheet"
+      href="./assets/bootstrap-5.3.2-dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="d-flex justify-content-center mt-3">
+        <div class="">
+          <p><b>Paypal Balance</b></p>
+          <h3>$ <span id="total-balance">23,394,552</span></h3>
+          <p>Estimated total of all curriences</p>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center" id="page-1">
+        <form
+          action=""
+          method="post"
+          class="col-lg-6 col-md-8 col-sm-11"
+          id="payform-submit"
+        >
+          <div class="row mb-3">
+            <label
+              for="send-payment-to"
+              class="col-lg-3 col-md-4 col-sm-12 col-form-label"
+              >Send Payment to</label
+            >
+            <div class="col-lg-9 col-md-8 col-sm-12">
+              <input
+                type="text"
+                class="form-control"
+                id="send-payment-to"
+                list="friends"
+                required
+              />
+              <datalist id="friends">
+                <option value="A"></option>
+                <option value="B"></option>
+                <option value="C"></option>
+              </datalist>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label
+              for="send-currency"
+              class="col-lg-3 col-md-4 col-sm-12 col-form-label"
+              >Select Currency</label
+            >
+            <div class="col-lg-9 col-md-8 col-sm-12">
+              <select class="form-control" id="send-currency" required>
+                <option value="USD">USD($)</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label
+              for="pay-amount"
+              class="col-lg-3 col-md-4 col-sm-12 col-form-label"
+              >Enter Amount</label
+            >
+            <div class="col-lg-9 col-md-8 col-sm-12">
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input
+                  type="text"
+                  class="form-control pay-input"
+                  id="pay-amount"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label
+              for="pay-fee"
+              class="col-lg-3 col-md-4 col-sm-12 col-form-label"
+              >Fee</label
+            >
+            <div class="col-lg-9 col-md-8 col-sm-12">
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input
+                  type="text"
+                  class="form-control pay-input"
+                  id="pay-fee"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label
+              for="pay-balance"
+              class="col-lg-3 col-md-4 col-sm-12 col-form-label"
+              >Balance</label
+            >
+            <div class="col-lg-9 col-md-8 col-sm-12">
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input
+                  type="text"
+                  class="form-control pay-input"
+                  id="pay-balance"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Money</button>
+          <button type="reset" class="btn btn-primary" id="reset-btn">
+            Reset
+          </button>
+        </form>
+      </div>
+      <div class="d-flex justify-content-center d-none" id="page-2">
+        <div>
+          <p>Sended to <span id="receiver"></span></p>
+          <p>$ <span id="receive-amount"></span></p>
+          <h4>Successful</h4>
+          <div><button class="btn" id="back-btn btn-primary">Back</button></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./assets/jquery-3.7.1.min.js"></script>
+    <script src="./assets/bootstrap-5.3.2-dist/js/bootstrap.min.js"></script>
+
+    <script>
+      const handleInputAmountChange = (name, value) => {
+        let balance = Number($("#total-balance").text().replace(/,/g, ""));
+        switch (name) {
+          case 0:
+            $("#pay-fee").val(5 + value * 0.01);
+            $("#pay-balance").val(balance - 5 - value * 1.01);
+            break;
+          case 1:
+            $("#pay-amount").val((value - 5) * 100);
+            $("#pay-balance").val(balance - value - (value - 5) * 100);
+            break;
+          case 2:
+            $("#pay-amount").val(((balance - value - 5) * 100) / 101);
+            $("#pay-fee").val((balance - value - 5) / 100 + 5);
+            break;
+          default:
+            break;
+        }
+      };
+
+      $(document).ready(function () {
+        $(".pay-input").keydown(function (e) {
+          if (
+            (e.key === "." && e.target.value.indexOf(".") === -1) ||
+            !isNaN(e.key)
+          )
+            return;
+          e.preventDefault();
+        });
+        $("#pay-amount").on("input", function (e) {
+          handleInputAmountChange(0, $(this).val());
+        });
+        $("#pay-fee").on("input", function () {
+          handleInputAmountChange(1, $(this).val());
+        });
+        $("#pay-balance").on("input", function () {
+          handleInputAmountChange(2, $(this).val());
+        });
+
+        $("#payform-submit").submit(function (e) {
+          e.preventDefault();
+          $("#page-1").fadeOut("fast", function () {
+            $("#page-1").addClass("d-none");
+            $("#page-2").fadeIn("fast");
+            $("#page-2").removeClass("d-none");
+            $("#receive-amount").text($("#pay-amount").val());
+            $("#receiver").text($("#send-payment-to").val());
+            $("#total-balance").text(
+              Number($("#pay-balance").val()).toLocaleString()
+            );
+          });
+        });
+        $("#back-btn").click(function () {
+          $("#page-2").fadeOut("fast", function () {
+            $("#page-2").addClass("d-none");
+            $("#page-1").fadeIn("fast");
+            $("#page-1").removeClass("d-none");
+            $("#reset-btn").click();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
